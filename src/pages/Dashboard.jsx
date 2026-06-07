@@ -26,6 +26,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!connected) {
       addNotification('🔌 Conecte um gateway', 'Conecte PixGo ou KryptGateway para começar', 'warning')
+      navigate('/app/conectar')
     }
   }, [])
 

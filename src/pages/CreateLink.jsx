@@ -19,8 +19,9 @@ export default function CreateLink() {
   async function handleCreate() {
     const amt = amount.replace(',', '.')
     if (!amt || parseFloat(amt) < 10) return alert('Valor mínimo: R$ 10,00')
+    if (!connected) return alert('Conecte um gateway primeiro em Configurações > Gateway')
     setLoading(true)
-    const gw = connected || 'pixgo'
+    const gw = connected
     const key = credentials?.apiKey || (credentials?.ci ? `${credentials.ci}||${credentials.cs}` : '')
     const d = await createLink(parseFloat(amt), desc || 'Link GoPay', gw, key)
     setLoading(false)
