@@ -54,6 +54,14 @@ function logout() {
   localStorage.removeItem('gopay_links')
 }
 
+async function deleteLink(id) {
+  const uid = await getUserId()
+  if (!uid) return { success: false, error: 'Não autenticado' }
+  const { error } = await supabase.from('links').delete().eq('id', id).eq('user_id', uid)
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}
+
 async function getLinks() {
   const uid = await getUserId()
   if (!uid) return { success: false, error: 'Não autenticado' }
@@ -271,7 +279,7 @@ function showLocalNotification(title, body) {
 }
 
 export default {
-  supabase, getUser, getToken, login, register, getLinks, createLink,
+  supabase, getUser, getToken, login, register, getLinks, createLink, deleteLink,
   getDashboard, getPaymentStatus, getPaymentLink, logout,
   requestNotificationPermission, showLocalNotification
 }

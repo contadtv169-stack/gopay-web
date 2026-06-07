@@ -257,3 +257,5 @@ label{font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:4px}
 .btn-share:hover{background:#059669}
 .link-tx{font-size:11px;color:#888;margin-left:8px}
 .form-help{font-size:12px;color:#888;margin-top:4px}
+.btn-delete{background:#EF4444;color:#FFF;border:1.5px solid #EF4444}
+.btn-delete:hover{background:#DC2626}

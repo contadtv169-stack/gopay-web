@@ -95,6 +95,17 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
     } catch { toast('Erro ao copiar') }
   }
 
+  async function handleDeleteLink(id) {
+    if (!confirm('Tem certeza que deseja excluir este link?')) return
+    try {
+      const d = await api.deleteLink(id)
+      if (d.success) {
+        setLinks(prev => prev.filter(l => l.id !== id))
+        toast('🗑️ Link excluído')
+      } else toast('❌ ' + (d.error || 'Erro ao excluir'))
+    } catch { toast('Erro ao excluir') }
+  }
+
   async function handleShare(link) {
     const url = link.paymentLink || `${window.location.origin}/gopay-web/?pay=${link.id}`
     if (navigator.share) {
@@ -253,6 +264,7 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
                         <button className="btn btn-sm" onClick={() => handleCopyLink(l.paymentLink)}>📋 Copiar Link</button>
                       )}
                       <button className="btn btn-sm btn-share" onClick={() => handleShare(l)}>📤 Compartilhar</button>
+                      <button className="btn btn-sm btn-delete" onClick={() => handleDeleteLink(l.id)}>🗑️ Excluir</button>
                     </div>
                     {(l.qrCodeBase64 || l.qr_image_url) && (
                       <div className="link-qr">
