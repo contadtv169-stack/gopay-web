@@ -75,7 +75,7 @@ export default function PaymentPage() {
           <div className="pay-error-icon">❌</div>
           <h2>Link não encontrado</h2>
           <p>Este link de pagamento é inválido ou expirou.</p>
-          <a href="/" className="btn">Ir para GoPay</a>
+            <a href="/gopay-web/" className="btn">Ir para GoPay</a>
         </div>
       </div>
     )
@@ -104,7 +104,7 @@ export default function PaymentPage() {
             <div className="pay-error-icon">⏰</div>
             <h2>Link Expirado</h2>
             <p>Este link de pagamento não está mais disponível.</p>
-            <a href="/" className="btn">Ir para GoPay</a>
+          <a href="/gopay-web/" className="btn">Ir para GoPay</a>
           </div>
         ) : (
           <div className="pay-active">

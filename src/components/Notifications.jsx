@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import api from '../api'
 
 export default function Notifications() {
@@ -23,7 +23,7 @@ export default function Notifications() {
     const ok = await api.requestNotificationPermission()
     if (ok) {
       setPerm('granted')
-      await api.subscribeToPush()
+      // push subscription handled by main.jsx on load
       addNotif('✅ Notificações ativadas', 'Você receberá alertas de pagamento em tempo real')
     }
   }
@@ -42,16 +42,16 @@ export default function Notifications() {
   const unread = notifs.filter(n => !n.read).length
 
   // Poll para novos pagamentos
+  const lastCountRef = useRef(0)
   useEffect(() => {
     const user = api.getUser()
     if (!user) return
-    let lastCount = notifs.length
     const interval = setInterval(async () => {
       try {
         const d = await api.getDashboard()
-        if (d.success && d.data?.payments > lastCount) {
+        if (d.success && d.data?.payments > lastCountRef.current) {
           addNotif('💰 Pagamento recebido!', 'Um novo pagamento foi confirmado.')
-          lastCount = d.data.payments
+          lastCountRef.current = d.data.payments
         }
       } catch {}
     }, 15000)

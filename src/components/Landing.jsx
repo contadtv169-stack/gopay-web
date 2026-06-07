@@ -109,7 +109,7 @@ export default function Landing({ onEnter, token }) {
 
       <footer className="l-footer">
         <p>GoPay &copy; 2026 &mdash; Pagamentos via PIX</p>
-        <p className="l-footer-small">contadtv169-stack.github.io/agentswill</p>
+        <p className="l-footer-small">contadtv169-stack.github.io/gopay-web</p>
       </footer>
     </div>
   )
