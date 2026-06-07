@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/agentswill/',
+  base: '/gopay-web/',
   plugins: [
     react(),
     VitePWA({
@@ -18,8 +18,8 @@ export default defineConfig({
         background_color: '#F5F7FA',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/agentswill/',
-        scope: '/agentswill/',
+        start_url: '/gopay-web/',
+        scope: '/gopay-web/',
         lang: 'pt-BR',
         icons: [
           { src: 'assets/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },

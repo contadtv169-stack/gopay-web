@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://seu-projeto.supabase.co'
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sua-anon-key'
-const BASE_URL = 'https://contadtv169-stack.github.io/agentswill'
+const BASE_URL = 'https://contadtv169-stack.github.io/gopay-web'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -124,8 +124,8 @@ async function requestNotificationPermission() {
 
 function showLocalNotification(title, body) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return
-  navigator.serviceWorker.ready.then(reg => {
-    reg.showNotification(title, { body, icon: '/assets/icon-192.svg', badge: '/assets/icon-192.svg' })
+    navigator.serviceWorker.ready.then(reg => {
+    reg.showNotification(title, { body, icon: '/gopay-web/assets/icon-192.svg', badge: '/gopay-web/assets/icon-192.svg' })
   })
 }
 
