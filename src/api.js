@@ -22,6 +22,10 @@ function getUser() {
   try { return JSON.parse(localStorage.getItem('gopay_user')) } catch { return null }
 }
 
+function getToken() {
+  return localStorage.getItem('gopay_token') || ''
+}
+
 async function getUserId() {
   const user = getUser()
   if (user?.id) return user.id
@@ -46,6 +50,7 @@ async function register(name, email, password) {
 function logout() {
   supabase.auth.signOut()
   localStorage.removeItem('gopay_user')
+  localStorage.removeItem('gopay_token')
   localStorage.removeItem('gopay_links')
 }
 
@@ -130,7 +135,7 @@ function showLocalNotification(title, body) {
 }
 
 export default {
-  supabase, getUser, login, register, getLinks, createLink,
+  supabase, getUser, getToken, login, register, getLinks, createLink,
   getDashboard, getPaymentStatus, getPaymentLink, logout,
   requestNotificationPermission, showLocalNotification
 }
