@@ -471,3 +471,15 @@ label{font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:4px}
 
 /* ===== LOADING ===== */
 .loading{text-align:center;padding:40px;color:#888;font-size:16px}
+
+/* ===== PIX SUCCESS SCREEN ===== */
+.pay-price-title{font-size:32px;font-weight:800;color:#0066FF;margin:8px 0}
+.result-qr-label{font-size:13px;color:#888;margin-top:8px}
+.result-pix-card{background:#F0F7FF;border:1.5px solid #0066FF;border-radius:16px;padding:16px;margin:16px 0;text-align:left}
+.result-pix-label{font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.result-pix-code{font-size:12px;font-family:monospace;color:#1A1A1A;word-break:break-all;background:#FFF;padding:12px;border-radius:8px;margin-bottom:10px;line-height:1.5;max-height:80px;overflow-y:auto}
+.result-pix-card .btn{width:100%}
+.result-link-card{background:#F5F7FA;border-radius:12px;padding:12px;margin:12px 0;text-align:left}
+.result-link-card small{font-size:11px;color:#888}
+.result-link-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.result-link-url{font-size:11px;color:#555;flex:1;word-break:break-all}

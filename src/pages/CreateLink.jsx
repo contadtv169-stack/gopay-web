@@ -33,6 +33,8 @@ export default function CreateLink() {
   }
 
   if (result) {
+    const qrSrc = result.qrCodeBase64 || result.qr_image_url
+    const pixCode = result.copyPaste || result.pixCode || ''
     return (
       <div className="page">
         <motion.div className="success-screen" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
@@ -40,19 +42,38 @@ export default function CreateLink() {
             ✅
           </motion.div>
           <h2>Link gerado com sucesso!</h2>
-          <p>Compartilhe seu link para receber pagamentos.</p>
+          <p className="pay-price-title">R$ {(result.amount || 0).toFixed(2).replace('.', ',')}</p>
+          <p>{result.description}</p>
 
-          <div className="result-url-card">
-            <div className="result-url">{result.paymentLink}</div>
-            <button className="btn btn-sm" onClick={() => { navigator.clipboard.writeText(result.paymentLink); alert('Link copiado!') }}>📋 Copiar</button>
-          </div>
+          {qrSrc && (
+            <div className="result-qr">
+              <img src={qrSrc} alt="QR Code PIX" style={{ width: 200, height: 200, borderRadius: 12 }} />
+              <p className="result-qr-label">Escaneie com seu banco</p>
+            </div>
+          )}
 
-          <div className="result-qr">
-            <QRCodeCanvas value={result.paymentLink} size={180} />
+          {pixCode && (
+            <div className="result-pix-card">
+              <div className="result-pix-label">Código PIX</div>
+              <div className="result-pix-code">{pixCode}</div>
+              <button className="btn" onClick={() => { navigator.clipboard.writeText(pixCode); alert('Código PIX copiado!') }}>📋 Copiar PIX</button>
+            </div>
+          )}
+
+          <div className="result-link-card">
+            <small>Link do pagamento</small>
+            <div className="result-link-row">
+              <span className="result-link-url">{result.paymentLink}</span>
+              <button className="btn btn-sm" onClick={() => { navigator.clipboard.writeText(result.paymentLink); alert('Link copiado!') }}>📋</button>
+            </div>
           </div>
 
           <div className="result-actions">
-            <button className="btn btn-lg" onClick={() => { navigator.share?.({ title: 'GoPay', text: `Pague ${result.amount} via PIX`, url: result.paymentLink }); }}>
+            <button className="btn btn-lg" onClick={() => {
+              const shareData = pixCode || result.paymentLink
+              if (navigator.share) navigator.share({ title: 'GoPay', text: `Pague R$ ${result.amount} via PIX`, url: result.paymentLink })
+              else navigator.clipboard.writeText(shareData)
+            }}>
               📤 Compartilhar
             </button>
             <button className="btn btn-lg btn-outline" onClick={() => setResult(null)}>
