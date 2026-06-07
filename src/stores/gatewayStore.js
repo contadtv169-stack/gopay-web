@@ -19,16 +19,18 @@ const useGatewayStore = create((set, get) => ({
         const res = await fetch('https://pixgo.org/api/v1/payment/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-API-Key': credentials.apiKey },
-          body: JSON.stringify({ amount: 10, description: 'Teste GoPay', external_id: 'test_' + Date.now() })
+          body: JSON.stringify({ amount: 10.00, description: 'Teste GoPay', external_id: 'gopay_test_' + Date.now() })
         })
-        const json = await res.json()
-        if (!json.success) return { success: false, error: 'API Key PixGo inválida' + (json.message ? ': ' + json.message : '') }
+        const text = await res.text()
+        let json
+        try { json = JSON.parse(text) } catch { json = { success: false, message: text } }
+        if (!json.success) return { success: false, error: json.message || json.error || 'API Key PixGo inválida' }
         const state = { connected: gateway, credentials, balance: null }
         localStorage.setItem('gopay_gateway', JSON.stringify(state))
         set(state)
         return { success: true }
-      } catch {
-        return { success: false, error: 'Erro de conexão com PixGo' }
+      } catch (e) {
+        return { success: false, error: 'Erro de conexão: ' + e.message }
       }
     }
     return { success: false, error: 'Gateway não suportado' }
@@ -40,21 +42,8 @@ const useGatewayStore = create((set, get) => ({
   },
 
   fetchBalance: async () => {
-    const { connected, credentials } = get()
-    if (!connected || !credentials) return
-    if (connected === 'krypt') {
-      try {
-        const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://kryptgateway.netlify.app/api/gateway/balance'), {
-          headers: { ci: credentials.ci, cs: credentials.cs }
-        })
-        const json = await res.json()
-        if (json.success) {
-          set({ balance: json.data })
-          const stored = JSON.parse(localStorage.getItem('gopay_gateway') || '{}')
-          localStorage.setItem('gopay_gateway', JSON.stringify({ ...stored, balance: json.data }))
-        }
-      } catch {}
-    }
+    // Balance fetching requires server-side proxy due to CORS
+    return null
   }
 }))
 
