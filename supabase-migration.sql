@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS links (
   copy_paste TEXT,
   pix_code TEXT,
   transaction_id TEXT,
+  expires_at TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -29,10 +30,10 @@ CREATE POLICY "Users manage own links"
 
 -- Função pública para buscar link de pagamento (apenas dados não sensíveis)
 CREATE OR REPLACE FUNCTION public.get_payment_link(link_id TEXT)
-RETURNS TABLE(id TEXT, amount DOUBLE PRECISION, description TEXT, status TEXT, qr_code_base64 TEXT, qr_image_url TEXT, copy_paste TEXT, pix_code TEXT, payment_link TEXT, created_at TIMESTAMPTZ)
+RETURNS TABLE(id TEXT, amount DOUBLE PRECISION, description TEXT, status TEXT, gateway TEXT, qr_code_base64 TEXT, qr_image_url TEXT, copy_paste TEXT, pix_code TEXT, payment_link TEXT, expires_at TEXT, created_at TIMESTAMPTZ)
 LANGUAGE sql
 SECURITY DEFINER
 AS $$
-  SELECT id, amount, description, status, qr_code_base64, qr_image_url, copy_paste, pix_code, payment_link, created_at
+  SELECT id, amount, description, status, gateway, qr_code_base64, qr_image_url, copy_paste, pix_code, payment_link, expires_at, created_at
   FROM links WHERE id = link_id;
 $$;
