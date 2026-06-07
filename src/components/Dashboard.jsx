@@ -16,16 +16,11 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
   const [loading, setLoading] = useState(false)
   const [view, setView] = useState('dashboard')
 
-  // login form
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPass, setLoginPass] = useState('')
-
-  // register form
   const [regName, setRegName] = useState('')
   const [regEmail, setRegEmail] = useState('')
   const [regPass, setRegPass] = useState('')
-
-  // link form
   const [linkAmount, setLinkAmount] = useState('')
   const [linkDesc, setLinkDesc] = useState('')
   const [linkGateway, setLinkGateway] = useState('pixgo')
@@ -83,9 +78,10 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
         setLinks(prev => [d.data, ...prev])
         setLinkAmount(''); setLinkDesc(''); setLinkApiKey('')
         toast('✅ Link criado!')
+        if (d.gatewayError) toast('⚠️ Gateway offline, QR gerado como fallback')
         if (d.data?.paymentLink) {
           navigator.clipboard.writeText(d.data.paymentLink)
-          toast('✅ Link copiado!')
+          toast('✅ Link copiado para área de transferência!')
         }
       } else toast('❌ ' + (d.error || 'Erro'))
     } catch { toast('Erro de conexão') }
@@ -99,6 +95,22 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
     } catch { toast('Erro ao copiar') }
   }
 
+  async function handleShare(link) {
+    const url = link.paymentLink || `${window.location.origin}/gopay-web/?pay=${link.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'GoPay - Pagamento via PIX',
+          text: `Pague ${formatMoney(link.amount)} via PIX - ${link.description || ''}`,
+          url
+        })
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast('📋 Link copiado para compartilhar!')
+    }
+  }
+
   function formatMoney(v) {
     return 'R$ ' + (v || 0).toFixed(2).replace('.', ',')
   }
@@ -109,7 +121,6 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
     return { text: 'Ativo', cls: 'badge-active' }
   }
 
-  // Login/Register view
   if (!isAuth) {
     return (
       <div className="dash">
@@ -151,7 +162,6 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
     )
   }
 
-  // Dashboard view (authenticated)
   return (
     <div className="dash">
       <header className="dash-topbar">
@@ -197,18 +207,23 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
             <div>
               <label>Gateway</label>
               <select value={linkGateway} onChange={e => setLinkGateway(e.target.value)}>
-                <option value="pixgo">PixGo</option>
-                <option value="krypt">KryptGateway</option>
+                <option value="pixgo">💚 PixGo</option>
+                <option value="krypt">🔷 KryptGateway</option>
               </select>
             </div>
             <div>
               <label>API Key</label>
-              <input type="text" placeholder="Chave do gateway" value={linkApiKey} onChange={e => setLinkApiKey(e.target.value)} />
+              <input type="text" placeholder={linkGateway === 'krypt' ? 'ci||cs' : 'Chave PixGo'} value={linkApiKey} onChange={e => setLinkApiKey(e.target.value)} />
             </div>
           </div>
           <button className="btn" onClick={handleCreateLink} disabled={loading} style={{ marginTop: 12 }}>
             {loading ? '⏳ Gerando...' : '🔗 Gerar Link de Pagamento'}
           </button>
+          {linkGateway === 'krypt' && (
+            <p className="form-help" style={{ marginTop: 8, fontSize: 12, opacity: 0.6 }}>
+              Para KryptGateway use: ci||cs (ou deixe em branco para usar o padrão)
+            </p>
+          )}
         </div>
 
         <div className="card">
@@ -225,25 +240,27 @@ export default function Dashboard({ user, token, onLogin, onLogout, onBack }) {
                       <div>
                         <strong className="link-desc">{l.description || 'Link'}</strong>
                         <span className="link-value">{formatMoney(l.amount)}</span>
-                        <span className="link-gateway">{l.gateway || 'pixgo'}</span>
+                        <span className="link-gateway">{l.gateway === 'krypt' ? '🔷 Krypt' : '💚 PixGo'}</span>
                       </div>
                       <span className={'badge ' + st.cls}>{st.text}</span>
                     </div>
                     <div className="link-meta">
                       <span className="link-date">{l.createdAt ? new Date(l.createdAt).toLocaleDateString('pt-BR') : '-'}</span>
+                      {l.transactionId && <span className="link-tx">TX: {l.transactionId.slice(0, 12)}...</span>}
                     </div>
-                    {l.paymentLink && (
-                      <div className="link-actions">
-                        <button className="btn btn-sm" onClick={() => handleCopyLink(l.paymentLink)}>📋 Copiar</button>
-                      </div>
-                    )}
+                    <div className="link-actions">
+                      {l.paymentLink && (
+                        <button className="btn btn-sm" onClick={() => handleCopyLink(l.paymentLink)}>📋 Copiar Link</button>
+                      )}
+                      <button className="btn btn-sm btn-share" onClick={() => handleShare(l)}>📤 Compartilhar</button>
+                    </div>
                     {(l.qrCodeBase64 || l.qr_image_url) && (
                       <div className="link-qr">
                         <img src={l.qrCodeBase64 || l.qr_image_url} alt="QR Code" />
-                        <small>QR Code PIX</small>
+                        <small>QR Code do Link</small>
                       </div>
                     )}
-                    {l.copyPaste && (
+                    {l.copyPaste && l.copyPaste !== l.paymentLink && (
                       <div className="link-pixcode">{l.copyPaste}</div>
                     )}
                   </div>

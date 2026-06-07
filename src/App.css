@@ -237,3 +237,23 @@ label{font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:4px}
 .splash-welcome-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
 .splash-wf-item{background:#FFF;border-radius:12px;padding:12px;font-size:13px;font-weight:600;color:#333;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .splash-start{width:100%;padding:14px}
+
+/* Payment Page Improvements */
+.pay-share{margin-left:auto}
+.pay-loading-logo{font-size:32px;font-weight:800;margin-bottom:10px}
+.pay-loading-logo span{color:#0066FF}
+.pay-success-redirect{font-size:13px;color:#888;margin-top:8px}
+.btn-copy{width:100%;margin-top:8px}
+.pay-no-pix{text-align:center;padding:40px 20px;color:#888}
+.pay-timer{text-align:center;font-size:13px;color:#888;margin-top:12px}
+.pay-brands{text-align:center;margin-top:20px;padding:16px;background:#F0F7FF;border-radius:12px}
+.pay-brands p{font-size:12px;color:#888;margin-bottom:4px}
+.pay-brands-logos{font-weight:700;font-size:15px;color:#0066FF}
+.pay-footer{text-align:center;padding:20px;font-size:13px;color:#888}
+.pay-footer-small{font-size:11px;opacity:.5;margin-top:2px}
+
+/* Dashboard Share */
+.btn-share{background:#10B981;color:#FFF;border:1.5px solid #10B981}
+.btn-share:hover{background:#059669}
+.link-tx{font-size:11px;color:#888;margin-left:8px}
+.form-help{font-size:12px;color:#888;margin-top:4px}

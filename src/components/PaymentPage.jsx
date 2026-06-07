@@ -39,8 +39,21 @@ export default function PaymentPage() {
     try {
       await navigator.clipboard.writeText(code)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setTimeout(() => setCopied(false), 3000)
     } catch {}
+  }
+
+  async function shareLink() {
+    const url = window.location.href
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'GoPay - Pagamento via PIX', text: `Pague ${formatMoney(data?.amount)} via PIX`, url })
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 3000)
+    }
   }
 
   async function fetchStatus() {
@@ -58,12 +71,29 @@ export default function PaymentPage() {
     return () => clearInterval(interval)
   }, [linkId, data?.status])
 
+  // Redirect to success after paid
+  useEffect(() => {
+    if (data?.status === 'paid' || data?.status === 'completed') {
+      const t = setTimeout(() => {
+        window.location.href = '/gopay-web/'
+      }, 5000)
+      return () => clearTimeout(t)
+    }
+  }, [data?.status])
+
+  function formatMoney(v) {
+    return 'R$ ' + (v || 0).toFixed(2).replace('.', ',')
+  }
+
   if (!linkId) return null
 
   if (loading) {
     return (
       <div className="pay-page">
-        <div className="pay-loading">⏳ Carregando pagamento...</div>
+        <div className="pay-loading">
+          <div className="pay-loading-logo">Go<span>Pay</span></div>
+          <p>⏳ Carregando pagamento...</p>
+        </div>
       </div>
     )
   }
@@ -71,11 +101,14 @@ export default function PaymentPage() {
   if (error) {
     return (
       <div className="pay-page">
+        <header className="pay-header">
+          <div className="pay-logo">Go<span>Pay</span></div>
+        </header>
         <div className="pay-error">
           <div className="pay-error-icon">❌</div>
           <h2>Link não encontrado</h2>
           <p>Este link de pagamento é inválido ou expirou.</p>
-            <a href="/gopay-web/" className="btn">Ir para GoPay</a>
+          <a href="/gopay-web/" className="btn">Ir para GoPay</a>
         </div>
       </div>
     )
@@ -89,6 +122,9 @@ export default function PaymentPage() {
     <div className="pay-page">
       <header className="pay-header">
         <div className="pay-logo">Go<span>Pay</span></div>
+        <button className="btn btn-sm btn-outline pay-share" onClick={shareLink}>
+          📤 Compartilhar
+        </button>
       </header>
 
       <main className="pay-main">
@@ -96,22 +132,24 @@ export default function PaymentPage() {
           <div className="pay-success">
             <div className="pay-success-icon">✅</div>
             <h2>Pagamento Confirmado!</h2>
-            <p className="pay-amount">R$ {(data.amount || 0).toFixed(2).replace('.', ',')}</p>
+            <p className="pay-amount">{formatMoney(data.amount)}</p>
             <p>{data.description}</p>
+            <p className="pay-success-redirect">Redirecionando em 5 segundos...</p>
+            <a href="/gopay-web/" className="btn">Voltar ao GoPay</a>
           </div>
         ) : isExpired ? (
           <div className="pay-error">
             <div className="pay-error-icon">⏰</div>
             <h2>Link Expirado</h2>
             <p>Este link de pagamento não está mais disponível.</p>
-          <a href="/gopay-web/" className="btn">Ir para GoPay</a>
+            <a href="/gopay-web/" className="btn">Ir para GoPay</a>
           </div>
         ) : (
           <div className="pay-active">
             <div className="pay-info">
               <p className="pay-label">Pagamento via PIX</p>
               <h2 className="pay-amount-title">{data.description || 'Pagamento'}</h2>
-              <div className="pay-price">R$ {(data.amount || 0).toFixed(2).replace('.', ',')}</div>
+              <div className="pay-price">{formatMoney(data.amount)}</div>
             </div>
 
             {qrSrc && (
@@ -125,9 +163,15 @@ export default function PaymentPage() {
               <div className="pay-copy-area">
                 <p className="pay-copy-label">Ou copie o código PIX:</p>
                 <div className="pay-pixcode">{data.copyPaste || data.pixCode}</div>
-                <button className="btn" onClick={copyPix}>
-                  {copied ? '✅ Copiado!' : '📋 Copiar Código'}
+                <button className="btn btn-copy" onClick={copyPix}>
+                  {copied ? '✅ Copiado!' : '📋 Copiar Código PIX'}
                 </button>
+              </div>
+            )}
+
+            {!qrSrc && !data.copyPaste && !data.pixCode && (
+              <div className="pay-no-pix">
+                <p>⏳ Gerando código PIX...</p>
               </div>
             )}
 
@@ -135,13 +179,24 @@ export default function PaymentPage() {
               <span className="pay-status-dot pulse"></span>
               Aguardando pagamento...
             </div>
+
+            <div className="pay-timer">
+              ⏱️ O PIX expira em 20 minutos
+            </div>
+
+            <div className="pay-brands">
+              <p>Pagamento processado por</p>
+              <div className="pay-brands-logos">
+                {data.gateway === 'krypt' ? '🔷 KryptGateway' : '💚 PixGo'}
+              </div>
+            </div>
           </div>
         )}
       </main>
 
       <footer className="pay-footer">
         <p>GoPay &copy; 2026 &mdash; Pagamentos via PIX</p>
-        <p className="pay-footer-small">gopayapp1.netlify.app</p>
+        <p className="pay-footer-small">contadtv169-stack.github.io/gopay-web</p>
       </footer>
     </div>
   )
