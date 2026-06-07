@@ -179,7 +179,7 @@ async function createLink(amount, description, gateway, apiKey) {
   const { data: inserted, error: insertError } = await supabase.from('links').insert({
     id: linkId, user_id: uid, amount: parseFloat(amount), description: description || 'Link GoPay',
     gateway: gateway || 'pixgo', api_key: apiKey, status: 'pending', payment_link: paymentLink,
-    qr_code_base64: qrUrl, qr_image_url: qrUrl, copy_paste: paymentLink
+    qr_code_base64: qrUrl, qr_image_url: qrUrl, copy_paste: ''
   }).select().single()
 
   if (insertError) return { success: false, error: insertError.message }
@@ -189,9 +189,8 @@ async function createLink(amount, description, gateway, apiKey) {
   const result = await gatewayFn(amount, description, apiKey)
 
   if (!result.success) {
-    // Fallback: keep qrserver code
-    await supabase.from('links').update({ status: 'active' }).eq('id', linkId)
-    return { success: true, data: mapper(inserted), gatewayError: result.error }
+    await supabase.from('links').update({ status: 'active', copy_paste: '' }).eq('id', linkId)
+    return { success: true, data: mapper({ ...inserted, copy_paste: '' }), gatewayError: result.error }
   }
 
   // Update with real PIX data

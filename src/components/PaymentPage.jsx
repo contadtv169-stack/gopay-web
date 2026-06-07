@@ -117,6 +117,8 @@ export default function PaymentPage() {
   const isPaid = data.status === 'paid' || data.status === 'completed'
   const isExpired = data.status === 'expired' || data.status === 'canceled'
   const qrSrc = data.qrCodeBase64 || data.qr_image_url
+  const isFallback = qrSrc && qrSrc.startsWith('https://api.qrserver.com')
+  const hasPix = (data.copyPaste || data.pixCode) && !isFallback
 
   return (
     <div className="pay-page">
@@ -154,12 +156,12 @@ export default function PaymentPage() {
 
             {qrSrc && (
               <div className="pay-qr-area">
-                <img src={qrSrc} alt="QR Code PIX" className="pay-qr" />
-                <p>Escaneie o QR Code com seu banco</p>
+                <img src={qrSrc} alt="QR Code" className="pay-qr" />
+                <p>{isFallback ? 'Escaneie para abrir o link de pagamento' : 'Escaneie o QR Code com seu banco'}</p>
               </div>
             )}
 
-            {(data.copyPaste || data.pixCode) && (
+            {hasPix && (
               <div className="pay-copy-area">
                 <p className="pay-copy-label">Ou copie o código PIX:</p>
                 <div className="pay-pixcode">{data.copyPaste || data.pixCode}</div>
@@ -169,7 +171,15 @@ export default function PaymentPage() {
               </div>
             )}
 
-            {!qrSrc && !data.copyPaste && !data.pixCode && (
+            <div className="pay-copy-area">
+              <p className="pay-copy-label">Link do pagamento:</p>
+              <div className="pay-pixcode" style={{ fontSize: 12, wordBreak: 'break-all' }}>{data.paymentLink || data.copyPaste}</div>
+              <button className="btn btn-copy" onClick={() => { navigator.clipboard.writeText(data.paymentLink || data.copyPaste || ''); setCopied(true); setTimeout(() => setCopied(false), 3000) }}>
+                {copied ? '✅ Copiado!' : '📋 Copiar Link'}
+              </button>
+            </div>
+
+            {!qrSrc && !hasPix && !data.copyPaste && !data.pixCode && (
               <div className="pay-no-pix">
                 <p>⏳ Gerando código PIX...</p>
               </div>

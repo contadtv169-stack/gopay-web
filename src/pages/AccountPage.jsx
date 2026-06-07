@@ -75,7 +75,7 @@ export default function AccountPage() {
             <span>›</span>
           </div>
           <div className="profile-item">
-            <span>📱 Versão 1.0.0</span>
+            <span>📱 Versão 1.0.1 - 07/06/2026</span>
             <span></span>
           </div>
         </div>

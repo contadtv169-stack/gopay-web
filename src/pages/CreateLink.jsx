@@ -34,7 +34,9 @@ export default function CreateLink() {
 
   if (result) {
     const qrSrc = result.qrCodeBase64 || result.qr_image_url
+    const isFallback = qrSrc && qrSrc.startsWith('https://api.qrserver.com')
     const pixCode = result.copyPaste || result.pixCode || ''
+    const hasPix = pixCode && !isFallback
     return (
       <div className="page">
         <motion.div className="success-screen" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
@@ -47,12 +49,12 @@ export default function CreateLink() {
 
           {qrSrc && (
             <div className="result-qr">
-              <img src={qrSrc} alt="QR Code PIX" style={{ width: 200, height: 200, borderRadius: 12 }} />
-              <p className="result-qr-label">Escaneie com seu banco</p>
+              <img src={qrSrc} alt="QR Code" style={{ width: 200, height: 200, borderRadius: 12 }} />
+              <p className="result-qr-label">{isFallback ? 'Escaneie para abrir o link' : 'Escaneie com seu banco'}</p>
             </div>
           )}
 
-          {pixCode && (
+          {hasPix && (
             <div className="result-pix-card">
               <div className="result-pix-label">Código PIX</div>
               <div className="result-pix-code">{pixCode}</div>
@@ -70,7 +72,7 @@ export default function CreateLink() {
 
           <div className="result-actions">
             <button className="btn btn-lg" onClick={() => {
-              const shareData = pixCode || result.paymentLink
+              const shareData = hasPix ? pixCode : result.paymentLink
               if (navigator.share) navigator.share({ title: 'GoPay', text: `Pague R$ ${result.amount} via PIX`, url: result.paymentLink })
               else navigator.clipboard.writeText(shareData)
             }}>
