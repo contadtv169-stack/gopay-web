@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://seu-projeto.supabase.co'
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sua-anon-key'
+const SUPABASE_URL = 'https://wnjpzsxrwwrskakrhfgg.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_mWFzAPYyXdhy0Psxj-x7lA_mYzu0clG'
 const BASE_URL = 'https://contadtv169-stack.github.io/gopay-web'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
