@@ -8,6 +8,10 @@ export default function PaymentPage() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
 
+  function getPixCode() { return data ? (data.copyPaste || data.pixCode || '') : '' }
+  function getQrSrc() { return data ? (data.qrCodeBase64 || data.qr_image_url) : '' }
+  function hasPix() { const c = getPixCode(); return !!c && c.startsWith('000201') }
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const id = params.get('pay')
@@ -34,7 +38,7 @@ export default function PaymentPage() {
   }
 
   async function copyPix() {
-    const code = data?.copyPaste || data?.pixCode || ''
+    const code = getPixCode() || data?.paymentLink || ''
     if (!code) return
     try {
       await navigator.clipboard.writeText(code)
@@ -116,9 +120,6 @@ export default function PaymentPage() {
 
   const isPaid = data.status === 'paid' || data.status === 'completed'
   const isExpired = data.status === 'expired' || data.status === 'canceled'
-  const qrSrc = data.qrCodeBase64 || data.qr_image_url
-  const isFallback = qrSrc && qrSrc.startsWith('https://api.qrserver.com')
-  const hasPix = (data.copyPaste || data.pixCode) && !isFallback
 
   return (
     <div className="pay-page">
@@ -154,32 +155,32 @@ export default function PaymentPage() {
               <div className="pay-price">{formatMoney(data.amount)}</div>
             </div>
 
-            {qrSrc && (
+            {getQrSrc() && (
               <div className="pay-qr-area">
-                <img src={qrSrc} alt="QR Code" className="pay-qr" />
-                <p>{isFallback ? 'Escaneie para abrir o link de pagamento' : 'Escaneie o QR Code com seu banco'}</p>
+                <img src={getQrSrc()} alt="QR Code" className="pay-qr" />
+                <p>Escaneie o QR Code com seu banco</p>
               </div>
             )}
 
-            {hasPix && (
+            {hasPix() ? (
               <div className="pay-copy-area">
                 <p className="pay-copy-label">Ou copie o código PIX:</p>
-                <div className="pay-pixcode">{data.copyPaste || data.pixCode}</div>
+                <div className="pay-pixcode">{getPixCode()}</div>
                 <button className="btn btn-copy" onClick={copyPix}>
                   {copied ? '✅ Copiado!' : '📋 Copiar Código PIX'}
                 </button>
               </div>
+            ) : (
+              <div className="pay-copy-area">
+                <p className="pay-copy-label">Link do pagamento:</p>
+                <div className="pay-pixcode" style={{ fontSize: 12, wordBreak: 'break-all' }}>{data.paymentLink || getPixCode()}</div>
+                <button className="btn btn-copy" onClick={() => { navigator.clipboard.writeText(data.paymentLink || getPixCode() || ''); setCopied(true); setTimeout(() => setCopied(false), 3000) }}>
+                  {copied ? '✅ Copiado!' : '📋 Copiar Link'}
+                </button>
+              </div>
             )}
 
-            <div className="pay-copy-area">
-              <p className="pay-copy-label">Link do pagamento:</p>
-              <div className="pay-pixcode" style={{ fontSize: 12, wordBreak: 'break-all' }}>{data.paymentLink || data.copyPaste}</div>
-              <button className="btn btn-copy" onClick={() => { navigator.clipboard.writeText(data.paymentLink || data.copyPaste || ''); setCopied(true); setTimeout(() => setCopied(false), 3000) }}>
-                {copied ? '✅ Copiado!' : '📋 Copiar Link'}
-              </button>
-            </div>
-
-            {!qrSrc && !hasPix && !data.copyPaste && !data.pixCode && (
+            {!getQrSrc() && !getPixCode() && (
               <div className="pay-no-pix">
                 <p>⏳ Gerando código PIX...</p>
               </div>
@@ -197,7 +198,7 @@ export default function PaymentPage() {
             <div className="pay-brands">
               <p>Pagamento processado por</p>
               <div className="pay-brands-logos">
-                {data.gateway === 'krypt' ? '🔷 KryptGateway' : '💚 PixGo'}
+                {data.gateway === 'krypt' ? '🔷 KryptGateway' : data.gateway === 'pixkey' ? '🔒 PIX Offline' : '💚 PixGo API'}
               </div>
             </div>
           </div>

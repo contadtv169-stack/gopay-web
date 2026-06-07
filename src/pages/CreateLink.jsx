@@ -23,7 +23,7 @@ export default function CreateLink() {
     setLoading(true)
     const gw = connected
     const key = credentials?.apiKey || (credentials?.ci ? `${credentials.ci}||${credentials.cs}` : '')
-    const d = await createLink(parseFloat(amt), desc || 'Link GoPay', gw, key)
+    const d = await createLink(parseFloat(amt), desc || 'Link GoPay', gw, key, credentials)
     setLoading(false)
     if (d.success) {
       addNotification('🔗 Link criado', `Link de ${amt} criado com sucesso`, 'success')
@@ -35,9 +35,8 @@ export default function CreateLink() {
 
   if (result) {
     const qrSrc = result.qrCodeBase64 || result.qr_image_url
-    const isFallback = qrSrc && qrSrc.startsWith('https://api.qrserver.com')
     const pixCode = result.copyPaste || result.pixCode || ''
-    const hasPix = pixCode && !isFallback
+    const hasPix = !!pixCode
     return (
       <div className="page">
         <motion.div className="success-screen" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
@@ -51,7 +50,7 @@ export default function CreateLink() {
           {qrSrc && (
             <div className="result-qr">
               <img src={qrSrc} alt="QR Code" style={{ width: 200, height: 200, borderRadius: 12 }} />
-              <p className="result-qr-label">{isFallback ? 'Escaneie para abrir o link' : 'Escaneie com seu banco'}</p>
+              <p className="result-qr-label">Escaneie com seu banco</p>
             </div>
           )}
 

@@ -9,7 +9,7 @@ import api from '../api'
 
 export default function Dashboard() {
   const { user } = useAuthStore()
-  const { connected, balance, fetchBalance } = useGatewayStore()
+  const { connected, balance, fetchBalance, mode } = useGatewayStore()
   const { links } = useLinksStore()
   const { addNotification } = useNotificationsStore()
   const navigate = useNavigate()
@@ -65,7 +65,9 @@ export default function Dashboard() {
             {hideBalance ? '👁️' : '👁️‍🗨️'}
           </button>
         </div>
-        <div className="balance-gateway">via {connected === 'krypt' ? 'KryptGateway' : 'PixGo'}</div>
+        <div className="balance-gateway">
+          {mode === 'offline' ? '🔒 Offline (PIX local)' : `via ${connected === 'krypt' ? 'KryptGateway' : 'PixGo'}`}
+        </div>
       </motion.div>
 
       <div className="metrics-grid">

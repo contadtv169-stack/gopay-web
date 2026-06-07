@@ -7,7 +7,7 @@ import useNotificationsStore from '../stores/notificationsStore'
 
 export default function AccountPage() {
   const { user, logout } = useAuthStore()
-  const { connected, disconnect } = useGatewayStore()
+  const { connected, disconnect, mode } = useGatewayStore()
   const { addNotification } = useNotificationsStore()
   const navigate = useNavigate()
   const [showLogout, setShowLogout] = useState(false)
@@ -33,7 +33,9 @@ export default function AccountPage() {
         <h2>{user?.name || 'Usuário'}</h2>
         <p className="profile-email">{user?.email || ''}</p>
         {connected && (
-          <div className="profile-badge">Gateway: {connected === 'krypt' ? '🔷 KryptGateway' : '💚 PixGo'} ✓</div>
+          <div className="profile-badge">
+            {mode === 'offline' ? '🔒 Chave PIX Local ✓' : `${connected === 'krypt' ? '🔷 KryptGateway' : '💚 PixGo'} ✓`}
+          </div>
         )}
       </div>
 
@@ -41,8 +43,10 @@ export default function AccountPage() {
         <div className="profile-section">
           <h3>Gateway</h3>
           <div className="profile-item" onClick={() => navigate('/app/conectar')}>
-            <span>🔌 Gateway conectado</span>
-            <span className="profile-item-right">{connected ? (connected === 'krypt' ? 'KryptGateway' : 'PixGo') : 'Nenhum'} ›</span>
+            <span>🔌 Gateway</span>
+            <span className="profile-item-right">
+              {connected ? (mode === 'offline' ? 'PIX Local' : connected === 'krypt' ? 'KryptGateway' : 'PixGo') : 'Nenhum'} ›
+            </span>
           </div>
           {connected && (
             <div className="profile-item danger" onClick={handleDisconnect}>
@@ -75,7 +79,7 @@ export default function AccountPage() {
             <span>›</span>
           </div>
           <div className="profile-item">
-            <span>📱 Versão 1.0.1 - 07/06/2026</span>
+            <span>📱 GoPay v1.1.0 - gerador PIX offline</span>
             <span></span>
           </div>
         </div>

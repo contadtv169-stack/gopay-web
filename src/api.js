@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { generatePixPayload, getKeyType } from './pix'
 
 const SUPABASE_URL = 'https://wnjpzsxrwwrskakrhfgg.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_mWFzAPYyXdhy0Psxj-x7lA_mYzu0clG'
@@ -167,15 +168,31 @@ async function kryptCheckStatus(transactionId, apiKey) {
 
 // --- LINK CREATION WITH GATEWAY ---
 
-async function createLink(amount, description, gateway, apiKey) {
+async function createLink(amount, description, gateway, apiKey, creds) {
   const uid = await getUserId()
   if (!uid) return { success: false, error: 'Não autenticado' }
 
   const linkId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
   const paymentLink = `${BASE_URL}/?pay=${linkId}`
+
+  // Generate PIX locally if using pixkey mode
+  if (gateway === 'pixkey' && creds?.pixKey) {
+    const pixPayload = generatePixPayload({
+      key: creds.pixKey, amount, description,
+      txid: linkId, name: creds.name, city: creds.city
+    })
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`
+    const { data: inserted, error: insertError } = await supabase.from('links').insert({
+      id: linkId, user_id: uid, amount: parseFloat(amount), description: description || 'Link GoPay',
+      gateway: 'pixkey', api_key: '', status: 'pending', payment_link: paymentLink,
+      qr_code_base64: qrUrl, qr_image_url: qrUrl, copy_paste: pixPayload, pix_code: pixPayload
+    }).select().single()
+    if (insertError) return { success: false, error: insertError.message }
+    return { success: true, data: mapper(inserted) }
+  }
+
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentLink)}`
 
-  // Insert placeholder first, then update with gateway data
   const { data: inserted, error: insertError } = await supabase.from('links').insert({
     id: linkId, user_id: uid, amount: parseFloat(amount), description: description || 'Link GoPay',
     gateway: gateway || 'pixgo', api_key: apiKey, status: 'pending', payment_link: paymentLink,
@@ -184,22 +201,33 @@ async function createLink(amount, description, gateway, apiKey) {
 
   if (insertError) return { success: false, error: insertError.message }
 
-  // Call gateway API
   const gatewayFn = gateway === 'krypt' ? kryptCreatePayment : pixgoCreatePayment
   const result = await gatewayFn(amount, description, apiKey)
 
   if (!result.success) {
-    await supabase.from('links').update({ status: 'active', copy_paste: '' }).eq('id', linkId)
-    return { success: true, data: mapper({ ...inserted, copy_paste: '' }), gatewayError: result.error }
+    const pixPayload = creds?.pixKey ? generatePixPayload({
+      key: creds.pixKey, amount, description,
+      txid: linkId, name: creds.name, city: creds.city
+    }) : ''
+    const fallbackQr = pixPayload
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`
+      : qrUrl
+    await supabase.from('links').update({
+      status: 'active',
+      copy_paste: pixPayload,
+      pix_code: pixPayload,
+      qr_code_base64: fallbackQr,
+      qr_image_url: fallbackQr
+    }).eq('id', linkId)
+    return { success: true, data: mapper({ ...inserted, copy_paste: pixPayload, pix_code: pixPayload, qr_code_base64: fallbackQr, qr_image_url: fallbackQr }), gatewayError: result.error }
   }
 
-  // Update with real PIX data
   const { data: updated } = await supabase.from('links').update({
     status: 'pending',
     transaction_id: result.transactionId,
     qr_code_base64: result.qrCodeBase64 || qrUrl,
     qr_image_url: result.qrImageUrl || qrUrl,
-    copy_paste: result.copyPaste || paymentLink,
+    copy_paste: result.copyPaste || '',
     pix_code: result.pixCode || '',
     expires_at: result.expiresAt || null
   }).eq('id', linkId).select().single()
