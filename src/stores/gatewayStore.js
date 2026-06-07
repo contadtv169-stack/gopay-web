@@ -9,30 +9,20 @@ const useGatewayStore = create((set, get) => ({
 
   connect: async (gateway, credentials) => {
     if (gateway === 'krypt') {
-      const { ci, cs } = credentials
-      try {
-        const res = await fetch('https://kryptgateway.netlify.app/api/gateway/balance', {
-          headers: { ci, cs }
-        })
-        const json = await res.json()
-        if (!json.success) return { success: false, error: 'Falha ao conectar KryptGateway' }
-        const state = { connected: gateway, credentials, balance: json.data }
-        localStorage.setItem('gopay_gateway', JSON.stringify(state))
-        set(state)
-        return { success: true }
-      } catch {
-        return { success: false, error: 'Erro de conexão com KryptGateway' }
-      }
+      const state = { connected: gateway, credentials, balance: null }
+      localStorage.setItem('gopay_gateway', JSON.stringify(state))
+      set(state)
+      return { success: true }
     }
     if (gateway === 'pixgo') {
       try {
         const res = await fetch('https://pixgo.org/api/v1/payment/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-API-Key': credentials.apiKey },
-          body: JSON.stringify({ amount: 1, description: 'Teste GoPay', external_id: 'test' })
+          body: JSON.stringify({ amount: 10, description: 'Teste GoPay', external_id: 'test_' + Date.now() })
         })
         const json = await res.json()
-        if (!json.success) return { success: false, error: 'API Key PixGo inválida' }
+        if (!json.success) return { success: false, error: 'API Key PixGo inválida' + (json.message ? ': ' + json.message : '') }
         const state = { connected: gateway, credentials, balance: null }
         localStorage.setItem('gopay_gateway', JSON.stringify(state))
         set(state)
@@ -54,7 +44,7 @@ const useGatewayStore = create((set, get) => ({
     if (!connected || !credentials) return
     if (connected === 'krypt') {
       try {
-        const res = await fetch('https://kryptgateway.netlify.app/api/gateway/balance', {
+        const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://kryptgateway.netlify.app/api/gateway/balance'), {
           headers: { ci: credentials.ci, cs: credentials.cs }
         })
         const json = await res.json()

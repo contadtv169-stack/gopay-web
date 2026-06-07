@@ -18,7 +18,7 @@ export default function CreateLink() {
 
   async function handleCreate() {
     const amt = amount.replace(',', '.')
-    if (!amt || parseFloat(amt) < 1) return alert('Informe um valor válido (mínimo R$ 1,00)')
+    if (!amt || parseFloat(amt) < 10) return alert('Valor mínimo: R$ 10,00')
     setLoading(true)
     const gw = connected || 'pixgo'
     const key = credentials?.apiKey || (credentials?.ci ? `${credentials.ci}||${credentials.cs}` : '')
